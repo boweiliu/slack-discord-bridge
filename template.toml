@@ -1,0 +1,114 @@
+# Machine-readable manifest for this template. The sibling
+# template.md holds the prose, the Requirements list, and the two
+# append-only history logs; this file is authoritative for everything
+# below. Both are generated together -- validate_template.py fails if
+# they disagree.
+format = "v2"
+
+[template]
+slug = "slack-discord-bridge"
+title = "Slack-Discord bridge"
+description = "A bidirectional Slack<->Discord message bridge with a monitoring dashboard. This is a pre-classifier v1 snapshot: no live-traffic sorting classifier, manual routing overrides, or hardened cross-channel duplicate-prevention invariant yet -- those are planned follow-ups."
+thumbnail = "template.svg"
+version = "v1"
+
+# How this template is DERIVED from the workspace it came from. An
+# update re-runs this recipe rather than diffing two repos, which is what
+# keeps an exclusion excluded even though the thing still exists upstream.
+[recipe]
+include = ["system/apps/xpost_dashboard", "system/supervisord.conf.d/xpost-dashboard.conf", "system/supervisord.conf.d/xpost-bridge.conf"]
+data_include = ["data/xpost-bridge/backfill/tools"]
+exclude = [
+    "the bridge engine itself (github.com/imbue-ai/xpost-bridge) -- referenced as a separate external repo to clone, not part of this tree at all",
+    "backfill output data -- the actual migrated message records and the plan/selection/apply-log files the backfill process produces; only the scripts under data/xpost-bridge/backfill/tools were included, not their outputs",
+    "the removed Imbue-specific rollout-history comment block in xpost-bridge.conf",
+]
+modification_rules = [
+    "replace the hardcoded Slack channel, Discord channel/forum ids, operator id, and alert-channel id in xpost-bridge.conf's environment with REPLACE_WITH_* placeholders",
+    "drop the operator's specific catch-up cutover timestamp (XPOST_CATCH_UP_SINCE) from xpost-bridge.conf entirely, so an adopter sets their own or uses the default",
+    "replace xpost-bridge.conf's leading comment block (which narrated the original operator's rollout stages, dates, and internal ticket ids) with a short generic comment describing the program and pointing at the engine repo's docs",
+    "replace the two real Slack/Discord channel ids used as mock/fixture data in the dashboard (mock_page.py, status_store.py docstring, testdata/status_sample.json) with synthetic placeholder ids in the same format",
+    "replace Imbue-specific example host names and the imbue.slack.com domain used as mock/fixture data in the dashboard with generic placeholders",
+    "replace the one literal Slack channel name in launch_classifiers.py's generated prompt text with a generic phrase",
+]
+
+# Everything an adopter must deal with before this is really theirs.
+# One list -- but each entry's KIND says how it is handled, because the
+# two are handled at different times by different mechanisms:
+#
+#   permission / secret / llm = ACTIVATION. The adopting agent acts on
+#   these FIRST and BY ITSELF, initiating each latchkey permission
+#   request and each secret request before asking the user anything.
+#   Every one of them must have a matching requires_ line in template.md
+#   and vice versa -- the validator checks that, because an adopter once
+#   never got prompted for a permission the app needed.
+#
+#   The [[requirements.secret]] entries below were AGGREGATED from the
+#   included apps' app.toml [[secrets]] and skills' SKILL.md secrets:
+#   declarations, plus every data/.secrets/<file>.env the snapshot's
+#   mcp-servers.json and supervisord programs run under. Fix a wrong one
+#   at its declaration, not here.
+#
+#   adaptation = worked through INTERACTIVELY with the user afterwards.
+#   Prose on both sides, so it is not cross-checked.
+#
+# FILL IN, e.g.:
+#   [[requirements.permission]]
+#   scope = "slack-api"
+#   permission = "slack-read-all"
+#
+#   [requirements.llm]
+#   method = "keyed"   # keyed (an API key, e.g. ANTHROPIC_API_KEY) | keyless (a subscription CLI, e.g. claude -p)
+#
+#   [[requirements.adaptation]]
+#   summary = "the digest channel is hardcoded"
+#   resolution = "ask the user which channel to watch"
+[requirements]
+
+[[requirements.secret]]
+file = "discord-xpost"
+variables = ["DISCORD_BOT_TOKEN"]
+note = "for the companion xpost-bridge service (system/supervisord.conf.d/xpost-bridge.conf), not the dashboard itself -- see the bridge repo's docs/SETUP.md"
+
+[[requirements.secret]]
+file = "slack-xpost"
+variables = ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"]
+note = "for the companion xpost-bridge service (system/supervisord.conf.d/xpost-bridge.conf), not the dashboard itself -- see the bridge repo's docs/SETUP.md"
+
+[[requirements.adaptation]]
+summary = "the bridge engine itself is not part of this template"
+resolution = "clone github.com/imbue-ai/xpost-bridge (or your own fork) into .external_worktrees/xpost-bridge/ and complete its own setup (AGENTS.md -> docs/START_HERE.md -> docs/SETUP.md) before xpost-bridge.conf will run"
+
+[[requirements.adaptation]]
+summary = "xpost-bridge.conf's environment line has REPLACE_WITH_* placeholders for every Imbue-specific id"
+resolution = "fill in your own Slack channel id, Discord channel/forum ids, a 4-character operator id of your choosing, and (if you want bridge alerts) a private Slack channel id"
+
+[[requirements.adaptation]]
+summary = "the backfill scripts hardcode a three-category sorting scheme and per-category quotas matching the original operator's Discord topology"
+resolution = "rewrite the categories in launch_classifiers.py and merge_sorting.py, and the QUOTA dict in merge_sorting.py, to match your own channels before reusing these scripts"
+
+[[requirements.adaptation]]
+summary = "a live-traffic classifier, manual routing overrides, and a hardened cross-channel duplicate-prevention invariant are planned but not built anywhere yet"
+resolution = "none yet to adapt -- flagged as future work, not something this snapshot or the current engine repo provides"
+
+# What the included code needs INSTALLED. apt takes bare names: versions
+# are a function of the apt snapshot timestamp, so replaying names at the
+# adopter's timestamp yields versions consistent with the rest of their
+# environment. The other sources are not snapshot-pinned, so for them the
+# recorded version IS the pin (name = version).
+#
+# FILL IN from what the included code actually needs, e.g.:
+#   apt = ["poppler-utils"]
+#   [environment.npm_global]
+#   "@slack/cli" = "2.1.0"
+#   [environment.uv_tools]
+#   yt-dlp = "2026.7.1"
+#   [environment.cargo_crates]
+#   fd-find = "9.0.0"
+#
+# For an install with no package database (a URL-fetched binary, a browser),
+# ship a system/scripts/env.d/<NNNN>-<slug>-<name>.sh unit with NNNN >= 2000,
+# include it in the recipe above, and list it in env_d_units.
+[environment]
+apt = []
+env_d_units = []

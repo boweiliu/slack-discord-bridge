@@ -1,0 +1,21 @@
+name = "xpost-dashboard"
+display_name = "Crosspost Dashboard"
+icon = "icon.svg"
+priority = "user"
+program = "xpost-dashboard"
+
+# How update-app boots a throwaway preview of this app: on a free port, over a
+# scratch copy of its data (see .agents/skills/update-app/scripts/preview_app.py).
+[preview]
+env = {XPOST_DASHBOARD_PORT = "{port:main}", XPOST_DASHBOARD_HOST = "{host}", XPOST_DASHBOARD_DATA_DIR = "{copy:data}"}
+copies = {data = "data/.apps/xpost-dashboard"}
+
+[[secrets]]
+file = "slack-xpost"
+variables = ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"]
+note = "for the companion xpost-bridge service (system/supervisord.conf.d/xpost-bridge.conf), not the dashboard itself -- see the bridge repo's docs/SETUP.md"
+
+[[secrets]]
+file = "discord-xpost"
+variables = ["DISCORD_BOT_TOKEN"]
+note = "for the companion xpost-bridge service (system/supervisord.conf.d/xpost-bridge.conf), not the dashboard itself -- see the bridge repo's docs/SETUP.md"

@@ -1,0 +1,51 @@
+{
+  "schema_version": 6,
+  "generated_at": "2026-09-28T12:00:00+00:00",
+  "instance": {
+    "id": "mind-07-instance",
+    "channel_pair": "Slack #general <-> Discord help-and-bugs",
+    "host": "host-a",
+    "phase": "ready",
+    "circuit_breaker": "closed",
+    "last_seen": {"slack": "2026-09-28T11:59:50+00:00", "discord": "2026-09-28T11:59:40+00:00"}
+  },
+  "actions": [
+    {
+      "state": "bridged",
+      "event_type": "posted",
+      "source_platform": "slack",
+      "dest_platform": "discord",
+      "source_url": "https://example.slack.com/archives/C000000000/p1738020001000200",
+      "dest_url": "https://discord.com/channels/1/2/1147920012345678901",
+      "origin_id": "slack:C000000000:1738020001.000200",
+      "source_message_id": "1738020001.000200",
+      "source_channel_id": "C000000000",
+      "dest_message_id": "1147920012345678901",
+      "dest_channel_id": "100000000000000001",
+      "posted_at": "2026-09-28T11:59:45+00:00",
+      "edited_at": null,
+      "seen_at": "2026-09-28T11:59:46+00:00",
+      "bridged_at": "2026-09-28T11:59:47+00:00"
+    },
+    {
+      "state": "ignored_duplicate",
+      "event_type": "posted",
+      "source_platform": "discord",
+      "dest_platform": null,
+      "source_url": null,
+      "dest_url": null,
+      "origin_id": "discord:100000000000000001:1147920098765432200",
+      "source_message_id": "1147920098765432200",
+      "source_channel_id": "100000000000000001",
+      "dest_message_id": null,
+      "dest_channel_id": null,
+      "posted_at": "2026-09-28T11:58:00+00:00",
+      "edited_at": null,
+      "seen_at": "2026-09-28T11:58:02+00:00",
+      "bridged_at": null
+    }
+  ],
+  "peers": [
+    {"name": "host-b", "reachable": true, "instance_count": 1, "url": "https://xpost-dashboard.host-b.example/"}
+  ]
+}
